@@ -52,6 +52,7 @@ vendor/bundle/
 # Database
 *.sqlite3
 *.db
+.ebextensions/02_env_vars.config
 
 # IDE and editor files
 .vscode/
