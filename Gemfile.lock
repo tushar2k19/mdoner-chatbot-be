@@ -241,7 +241,7 @@ DEPENDENCIES
   bootsnap
   debug
   jwt_sessions
-  mysql2 (~> 0.5)
+  mysql2
   nokogiri
   paranoia (~> 2.6)
   puma (>= 5.0)
