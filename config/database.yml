@@ -11,7 +11,7 @@ development:
 
 test:
   <<: *default
-  database: chhatisgarh_test
+  database: mdoner-chatbot-test
 
 production:
   url: <%= ENV['DATABASE_URL'] %>
