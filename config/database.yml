@@ -9,9 +9,9 @@ development:
   <<: *default
   database: <%= ENV.fetch("MYSQL__DATABASE_APP", "mdoner-dashboard") %>
 
-test:
-  <<: *default
-  database: mdoner-chatbot-test
+# test:
+#   <<: *default
+#   database: mdoner-chatbot-test
 
 production:
   url: <%= ENV['DATABASE_URL'] %>
