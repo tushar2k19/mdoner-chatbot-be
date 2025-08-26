@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  conversation: one
+  provider: MyString
+  query: MyText
+  results_json: 
+
+two:
+  conversation: two
+  provider: MyString
+  query: MyText
+  results_json: 

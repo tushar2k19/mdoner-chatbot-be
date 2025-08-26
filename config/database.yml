@@ -3,15 +3,15 @@ default: &default
   encoding: utf8mb4
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   username: <%= ENV.fetch("MYSQL_USER", "root") %>
-  password: <%= ENV.fetch("MYSQL_PASSWORD", "Imtjrocks@123") %>
+  password: <%= ENV.fetch("MYSQL_PASSWORD", "freee") %>
 
 development:
   <<: *default
-  database: <%= ENV.fetch("MYSQL__DATABASE_APP", "mdoner-dashboard") %>
+  database: dpr_chatbot_development
 
-# test:
-#   <<: *default
-#   database: mdoner-chatbot-test
+test:
+  <<: *default
+  database: dpr_chatbot_test
 
 production:
   url: <%= ENV['DATABASE_URL'] %>

@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  original_filename: MyString
+  openai_file_id: MyString
+  vector_store_id: MyString
+  file_size: 1
+  sha256_hash: MyString
+  ocr_status: MyString
+
+two:
+  original_filename: MyString
+  openai_file_id: MyString
+  vector_store_id: MyString
+  file_size: 1
+  sha256_hash: MyString
+  ocr_status: MyString

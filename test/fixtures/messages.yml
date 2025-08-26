@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  conversation: one
+  role: MyString
+  content: MyText
+  citations_json: 
+
+two:
+  conversation: two
+  role: MyString
+  content: MyText
+  citations_json: 

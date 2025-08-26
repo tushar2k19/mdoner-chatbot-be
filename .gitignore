@@ -16,6 +16,9 @@
 .env.test.local
 .env.production.local
 
+# Database configuration with sensitive info
+config/database.yml
+
 
 # Ignore all logfiles and tempfiles.
 /log/*
