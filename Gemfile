@@ -14,6 +14,8 @@ gem 'aws-sdk-s3'                   #needed for s3 bucket
 gem 'roo'
 gem 'paranoia', '~> 2.6'
 gem 'nokogiri'
+gem 'httparty'               # HTTP requests to OpenAI/external APIs
+gem 'mysql2'                 # MySQL database adapter
 
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
