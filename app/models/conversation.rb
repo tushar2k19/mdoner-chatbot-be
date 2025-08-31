@@ -7,15 +7,17 @@ class Conversation < ApplicationRecord
   validates :user_id, presence: true
   validates :openai_thread_id, presence: true, uniqueness: true
   validates :title, length: { maximum: 255 }, allow_nil: true
+  validates :status, inclusion: { in: %w[active archived deleted] }  # Line 9: ADD THIS LINE
 
-  # Enums
-  enum status: { active: 'active', archived: 'archived', deleted: 'deleted' }
 
-  # Callbacks
-  before_validation :set_defaults
+  # enum status: { active: 'active', archived: 'archived', deleted: 'deleted' }  # REMOVE THIS LINE
+  # Replace with simple status validation above (Line 9)
+
+  # Callbacks - REMOVE Line 19 and 20, replace with:
+  before_validation :set_defaults, on: :create  # Line 15: UPDATED - only run on create
   before_save :normalize_title
-  after_create :create_openai_thread
-  after_update :update_openai_thread, if: :saved_change_to_title?
+  # REMOVE: after_create :create_openai_thread  # This causes problems
+  # REMOVE: after_update :update_openai_thread, if: :saved_change_to_title?  # Not needed for prototype
 
   # Scopes
   scope :recent, -> { order(updated_at: :desc) }
@@ -67,6 +69,19 @@ class Conversation < ApplicationRecord
 
   def web_messages
     messages.where(source: 'web')
+  end
+
+  # Status helper methods - ADD these to replace enum functionality:
+  def active?
+    status == 'active'
+  end
+
+  def archived?
+    status == 'archived'
+  end
+
+  def deleted?
+    status == 'deleted'
   end
 
   def archive!
@@ -172,22 +187,10 @@ class Conversation < ApplicationRecord
     }
   end
 
-  # OpenAI integration methods
-  def create_openai_thread
-    # This would be implemented in a service
-    # For now, generate a placeholder thread ID
-    self.openai_thread_id ||= "thread_#{SecureRandom.hex(12)}"
-  end
-
-  def update_openai_thread
-    # This would update the thread metadata in OpenAI
-    # Implementation would go here
-  end
-
-  def delete_openai_thread
-    # This would delete the thread from OpenAI
-    # Implementation would go here
-  end
+  # REMOVE these OpenAI methods for now - we'll handle this in the controller:
+  # def create_openai_thread
+  # def update_openai_thread  
+  # def delete_openai_thread
 
   private
 

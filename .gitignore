@@ -85,3 +85,5 @@ Thumbs.db
 # Cache
 .cache/
 
+config/database.yml
+db/schema.rb

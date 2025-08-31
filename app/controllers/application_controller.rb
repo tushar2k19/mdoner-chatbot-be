@@ -23,4 +23,8 @@ class ApplicationController < ActionController::API
     response.headers['Access-Control-Allow-Headers'] = 'Origin, Content-Type, Accept, Authorization, X-CSRF-Token'
     response.headers['Access-Control-Expose-Headers'] = 'access-token, expiry, token-type, Authorization'
   end
+
+  def authenticate_user!
+    current_user
+  end
 end
