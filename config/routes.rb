@@ -3,15 +3,16 @@ Rails.application.routes.draw do
   get 'test_auth' => 'application#test_auth'
   mount ActionCable.server => '/cable'
   
-  # Auth
-  post '/signin', to: 'signin#create'
-  delete '/signout', to: 'signin#destroy'
+  # # Auth
+  # post '/signin', to: 'signin#create'
+  # delete '/signout', to: 'signin#destroy'
   
   namespace :api do
     
       namespace :auth do
         post 'signin', to: 'authentication#signin'
         # Add other auth routes here later
+        post '/signout', to: 'signin#destroy' 
       end
       
       # Conversation routes (NEW - add this section)
