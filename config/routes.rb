@@ -7,6 +7,20 @@ Rails.application.routes.draw do
   post '/signin', to: 'signin#create'
   delete '/signout', to: 'signin#destroy'
   
+  namespace :api do
+    
+      namespace :auth do
+        post 'signin', to: 'authentication#signin'
+        # Add other auth routes here later
+      end
+      
+      # Conversation routes (NEW - add this section)
+      resources :conversations, only: [:create, :index, :destroy] do
+        # Nested routes for messages (we'll implement this in Step 12)
+        resources :messages, only: [:index, :create], controller: 'conversations/messages'
+      end
+    end
+
   # Minimal documents endpoint placeholder for health
   get '/api/health', to: proc { [200, { 'Content-Type' => 'application/json' }, [{ status: 'healthy' }.to_json]] }
 
