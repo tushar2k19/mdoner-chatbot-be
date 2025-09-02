@@ -35,12 +35,14 @@ class Api::Conversations::MessagesController < ApplicationController
     end
     
     # Format response
-    render json: {
-      messages: @messages.map { |msg| format_message(msg) },
+    render_success({
+    messages: @messages.map { |msg| format_message(msg) },
+    pagination: {
       has_more: has_more,
       oldest_message_id: @messages.first&.id,
       newest_message_id: @messages.last&.id
     }
+  })
   end
 
   # POST /api/conversations/:conversation_id/messages
@@ -80,10 +82,10 @@ class Api::Conversations::MessagesController < ApplicationController
       )
       
       # Step 5: Return formatted response
-      render json: {
-        message: format_message(assistant_message),
-        streaming: false  # We'll implement streaming later
-      }
+      render_success({
+      message: format_message(assistant_message),
+      streaming: false
+    })
       
     rescue => e
       # Handle OpenAI errors
@@ -101,14 +103,12 @@ class Api::Conversations::MessagesController < ApplicationController
         source: 'dpr'
       )
       
-      render json: {
-        error: {
-          code: "OPENAI_ERROR",
-          message: "Unable to process message",
-          details: e.message
-        },
-        message: format_message(error_message)
-      }, status: :service_unavailable
+      render_error(
+      'OPENAI_ERROR',
+      'Unable to process message',
+      details: e.message,
+      status: :service_unavailable
+    )
     end
   end
 
@@ -122,12 +122,11 @@ class Api::Conversations::MessagesController < ApplicationController
     )
     
     unless @conversation
-      render json: {
-        error: {
-          code: "CONVERSATION_NOT_FOUND",
-          message: "Conversation not found or access denied"
-        }
-      }, status: :not_found
+      render_error(
+      'CONVERSATION_NOT_FOUND',
+      'Conversation not found or access denied',
+      status: :not_found
+    )
     end
   end
 
