@@ -7,13 +7,16 @@ Rails.application.routes.draw do
   # post '/signin', to: 'signin#create'
   # delete '/signout', to: 'signin#destroy'
   
+  post '/api/auth/signin', to: 'signin#create'
+  post '/api/auth/signout', to: 'signin#destroy'
+  
   namespace :api do
     
-      namespace :auth do
-        post 'signin', to: 'authentication#signin'
-        # Add other auth routes here later
-        post '/signout', to: 'signin#destroy' 
-      end
+      # namespace :auth do
+      #   post 'signin', to: 'signin#create'
+      #   # Add other auth routes here later
+      #   post '/signout', to: 'signin#destroy' 
+      # end
       
       # Conversation routes (NEW - add this section)
       resources :conversations, only: [:create, :index, :destroy] do

@@ -219,7 +219,7 @@ def parse_assistant_response(assistant_message)
     }
   end
 end
-# Add this NEW method for citation extraction
+
 # Update the extract_citations_from_message method
 def extract_citations_from_message(assistant_message)
   citations = []

@@ -27,30 +27,29 @@ class Api::ConversationsController < ApplicationController
       # Step 5: Save the conversation to database
       if @conversation.save
         # Success response - return the conversation data
-        render json: {
-          conversation: format_conversation(@conversation)
-        }, status: :created
+        render_success(
+          { conversation: format_conversation_response(@conversation) },
+          message: "Conversation created successfully",
+          status: :created
+        )
       else
         # Database validation failed
-        render json: {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Failed to create conversation",
-            details: @conversation.errors.full_messages
-          }
-        }, status: :unprocessable_entity
+        render_error(
+          'VALIDATION_ERROR',
+          'Failed to create conversation',
+          details: @conversation.errors.full_messages
+        )
       end
       
     rescue => e
       # OpenAI API failed or other unexpected error
       Rails.logger.error "Failed to create conversation: #{e.message}"
-      render json: {
-        error: {
-          code: "CONVERSATION_CREATION_FAILED",
-          message: "Unable to create conversation. Please try again.",
-          details: e.message
-        }
-      }, status: :service_unavailable
+      render_error(
+        'CONVERSATION_CREATION_FAILED',
+        'Unable to create conversation. Please try again.',
+        details: e.message,
+        status: :service_unavailable
+      )
     end
   end
 
@@ -85,32 +84,25 @@ class Api::ConversationsController < ApplicationController
     oldest_conversation_id = @conversations.last&.id
 
     # Step 4: Format the response
-    render json: {
-      conversations: @conversations.map do |conv|
-        {
-          id: conv.id,
-          title: conv.title,
-          message_count: conv.message_count,
-          created_at: conv.created_at.iso8601,
-          updated_at: conv.updated_at.iso8601,
-          last_message_at: conv.last_message_at&.iso8601
-        }
-      end,
-      has_more: has_more,
-      oldest_conversation_id: oldest_conversation_id
-    }
+    render_success({
+      conversations: @conversations.map { |conv| format_conversation_response(conv) },
+      pagination: {
+        has_more: has_more,
+        oldest_conversation_id: oldest_conversation_id
+      }
+    })
   end
 
   # GET /api/conversations/:id
   # Get single conversation details
   def show
-    render json: {
-      conversation: format_conversation(@conversation),
-      message_count: @conversation.message_count,
-      last_message_at: @conversation.last_message_at,
-      created_at: @conversation.created_at.iso8601,
-      updated_at: @conversation.updated_at.iso8601
-    }
+    render_success({
+    conversation: format_conversation(@conversation),
+    message_count: @conversation.message_count,
+    last_message_at: @conversation.last_message_at,
+    created_at: @conversation.created_at.iso8601,
+    updated_at: @conversation.updated_at.iso8601
+  })
   end
 
   # DELETE /api/conversations/:id
@@ -127,20 +119,20 @@ class Api::ConversationsController < ApplicationController
       Rails.logger.info "User #{current_user.id} deleted conversation #{@conversation.id}"
       
       # Step 4: Return success response
-      render json: {
-        message: "Conversation deleted successfully"
-      }
+          render_success(
+      { message: "Conversation deleted successfully" },
+      message: "Conversation deleted successfully"
+    )
       
     rescue => e
       # Handle any unexpected errors
       Rails.logger.error "Failed to delete conversation #{@conversation.id}: #{e.message}"
-      render json: {
-        error: {
-          code: "DELETION_FAILED",
-          message: "Unable to delete conversation. Please try again.",
-          details: e.message
-        }
-      }, status: :service_unavailable
+      render_error(
+        'DELETION_FAILED',
+        'Unable to delete conversation. Please try again.',
+        details: e.message,
+        status: :service_unavailable
+)
     end
   end
 
@@ -151,12 +143,11 @@ class Api::ConversationsController < ApplicationController
     @conversation = current_user.conversations.find_by(id: params[:id], status: 'active')
     
     unless @conversation
-      render json: {
-        error: {
-          code: "CONVERSATION_NOT_FOUND",
-          message: "Conversation not found or access denied"
-        }
-      }, status: :not_found
+      render_error(
+        'CONVERSATION_NOT_FOUND',
+        'Conversation not found or access denied',
+        status: :not_found
+      )
     end
   end
 

@@ -85,3 +85,4 @@ Thumbs.db
 # Cache
 .cache/
 
+test/controllers/api/
