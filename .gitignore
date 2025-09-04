@@ -87,3 +87,8 @@ Thumbs.db
 
 config/database.yml
 db/schema.rb
+# Test files - not needed for production
+test/
+test_*.rb
+spec/
+*.test.rb

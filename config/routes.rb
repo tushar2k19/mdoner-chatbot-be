@@ -3,17 +3,15 @@ Rails.application.routes.draw do
   get 'test_auth' => 'application#test_auth'
   mount ActionCable.server => '/cable'
   
-  # Auth
-  post '/signin', to: 'signin#create'
-  delete '/signout', to: 'signin#destroy'
+  # # Auth
+  # post '/signin', to: 'signin#create'
+  # delete '/signout', to: 'signin#destroy'
+  
+  post '/api/auth/signin', to: 'signin#create'
+  post '/api/auth/signout', to: 'signin#destroy'
   
   namespace :api do
     
-      namespace :auth do
-        post 'signin', to: 'authentication#signin'
-        # Add other auth routes here later
-      end
-      
       # Conversation routes (NEW - add this section)
       resources :conversations, only: [:create, :index, :destroy, :update] do
         # Nested routes for messages (we'll implement this in Step 12)

@@ -2,19 +2,46 @@ class ApplicationController < ActionController::API
   before_action :set_cors_headers
 
   include JWTSessions::RailsAuthorization
+  include ApiResponseFormatter #custom response formatter for api
+  
   rescue_from JWTSessions::Errors::Unauthorized, with: :not_authorized
+  rescue_from ActiveRecord::RecordNotFound, with: :not_found
+  rescue_from ActionController::ParameterMissing, with: :bad_request
 
   def test_auth
-    render json: { status: 'ok' }
+    render_success({ status: 'ok' })  # Updated to use standardized response
   end
 
   private
+  
   def current_user
-    @current_user || (User.find(payload['user_id']))#comes from the JWT sessions (line 2)
+    @current_user || (User.find(payload['user_id'])) #comes from the JWT sessions (line 2)
   end
+  
   def not_authorized
-    render json: { error: "Not authorized" }, status: :unauthorized
+    render_error(
+      'AUTHENTICATION_ERROR', 
+      'Invalid or expired token', 
+      status: :unauthorized
+    )
   end
+
+  def not_found
+    render_error(
+      'RESOURCE_NOT_FOUND',
+      'The requested resource was not found',
+      status: :not_found
+    )
+  end
+
+  def bad_request
+    render_error(
+      'BAD_REQUEST',
+      'Invalid request parameters',
+      status: :bad_request
+    )
+  end
+  
   def set_cors_headers
     # Temporarily allow all origins for testing
     response.headers['Access-Control-Allow-Origin'] = request.headers['Origin']
