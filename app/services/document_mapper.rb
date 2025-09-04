@@ -5,8 +5,8 @@ class DocumentMapper
   def self.file_id_to_document_name(file_id)
     # Temporary mapping - replace with real ones from your team lead
     mapping = {
-      'file-abc123' => 'Nagaland_Innovation_Hub.pdf',
-      'file-def456' => 'Mizoram_Development_of_Helipads.pdf'
+      'file-abc123' => 'Mizoram_Development_of_Helipads.pdf'
+      'file-mno345' => 'Nagaland_Innovation_Hub.pdf'
     }
     
     # Return the mapped name or a fallback
@@ -16,8 +16,8 @@ class DocumentMapper
   # Get all available document names
   def self.available_documents
     [
-      'Nagaland_Innovation_Hub.pdf',
-      'Mizoram_Development_of_Helipads.pdf'
+      'Mizoram_Development_of_Helipads.pdf',
+      'Nagaland_Innovation_Hub.pdf'
     ]
   end
 end
