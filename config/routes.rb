@@ -15,7 +15,7 @@ Rails.application.routes.draw do
       end
       
       # Conversation routes (NEW - add this section)
-      resources :conversations, only: [:create, :index, :destroy] do
+      resources :conversations, only: [:create, :index, :destroy, :update] do
         # Nested routes for messages (we'll implement this in Step 12)
         resources :messages, only: [:index, :create], controller: 'conversations/messages'
       end

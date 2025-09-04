@@ -7,7 +7,7 @@ class OpenaiService
   def initialize
     @api_key = ENV['OPENAI_API_KEY']
     @assistant_id = ENV['OPENAI_ASSISTANT_ID']
-    @model = ENV['OPENAI_MODEL'] || 'gpt-4o-mini'
+    @model = ENV['OPENAI_MODEL'] || 'gpt-4.1-nano'
     
      # Log the actual values (be careful with sensitive data)
      Rails.logger.info "API Key length: #{@api_key&.length || 0}"

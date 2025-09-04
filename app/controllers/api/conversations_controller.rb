@@ -3,7 +3,7 @@ class Api::ConversationsController < ApplicationController
   before_action :authenticate_user!
    require_dependency 'openai_service'
   # This finds the conversation and checks if user owns it (for show/destroy actions)
-  before_action :find_conversation, only: [:show, :destroy]
+  before_action :find_conversation, only: [:show, :destroy, :update]
 
   # POST /api/conversations
   # Creates a new conversation with OpenAI thread 
@@ -111,6 +111,36 @@ class Api::ConversationsController < ApplicationController
       created_at: @conversation.created_at.iso8601,
       updated_at: @conversation.updated_at.iso8601
     }
+  end
+
+  # PUT /api/conversations/:id
+  # Updates conversation title
+  def update
+    begin
+      if @conversation.update(conversation_params)
+        render json: {
+          conversation: format_conversation(@conversation),
+          message: "Conversation updated successfully"
+        }
+      else
+        render json: {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Failed to update conversation",
+            details: @conversation.errors.full_messages
+          }
+        }, status: :unprocessable_entity
+      end
+    rescue => e
+      Rails.logger.error "Failed to update conversation #{@conversation.id}: #{e.message}"
+      render json: {
+        error: {
+          code: "UPDATE_FAILED",
+          message: "Unable to update conversation. Please try again.",
+          details: e.message
+        }
+      }, status: :service_unavailable
+    end
   end
 
   # DELETE /api/conversations/:id

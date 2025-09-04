@@ -242,3 +242,7 @@ class Message < ApplicationRecord
     conversation.touch if conversation.present?
   end
 end
+
+
+
+
