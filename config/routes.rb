@@ -3,12 +3,12 @@ Rails.application.routes.draw do
   get 'test_auth' => 'application#test_auth'
   mount ActionCable.server => '/cable'
   
-  # # Auth
-  # post '/signin', to: 'signin#create'
-  # delete '/signout', to: 'signin#destroy'
+  # Auth
+  post '/signin', to: 'signin#create'
+  delete '/signout', to: 'signin#destroy'
   
-  post '/api/auth/signin', to: 'signin#create'
-  post '/api/auth/signout', to: 'signin#destroy'
+  # post '/api/auth/signin', to: 'signin#create'
+  # post '/api/auth/signout', to: 'signin#destroy'
   
   namespace :api do
     

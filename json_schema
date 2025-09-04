@@ -1,0 +1,30 @@
+{
+  "name": "dpr_response",
+  "schema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "answer": {
+        "type": "string",
+        "description": "Concise factual answer from the DPR PDFs with chain-of-thought reasoning"
+      },
+      "citations": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Document names used as sources (no page numbers)"
+      },
+      "needs_consent": {
+        "type": "boolean",
+        "description": "True only if question cannot be answered from the PDFs"
+      },
+      "message": {
+        "type": "string",
+        "description": "Consent message shown only when needs_consent is true"
+      }
+    },
+    "required": ["answer", "citations", "needs_consent"]
+  },
+  "strict": false
+}
