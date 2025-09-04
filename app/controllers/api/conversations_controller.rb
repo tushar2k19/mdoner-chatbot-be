@@ -145,7 +145,6 @@ class Api::ConversationsController < ApplicationController
       }, status: :service_unavailable
     end
   end
-
   # DELETE /api/conversations/:id
   # Soft deletes a conversation (marks as deleted, doesn't remove from DB)
   def destroy
