@@ -7,13 +7,9 @@ Rails.application.routes.draw do
   post '/signin', to: 'signin#create'
   delete '/signout', to: 'signin#destroy'
   
-  # post '/api/auth/signin', to: 'signin#create'
-  # post '/api/auth/signout', to: 'signin#destroy'
-  
   namespace :api do
-    
       # Conversation routes (NEW - add this section)
-      resources :conversations, only: [:create, :index, :destroy, :update] do
+      resources :conversations, only: [:create, :index, :show, :update, :destroy] do
         # Nested routes for messages (we'll implement this in Step 12)
         resources :messages, only: [:index, :create], controller: 'conversations/messages'
       end
