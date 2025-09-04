@@ -35,14 +35,12 @@ class Api::Conversations::MessagesController < ApplicationController
     end
     
     # Format response
-    render_success({
-    messages: @messages.map { |msg| format_message(msg) },
-    pagination: {
+    render json: {
+      messages: @messages.map { |msg| format_message(msg) },
       has_more: has_more,
       oldest_message_id: @messages.first&.id,
       newest_message_id: @messages.last&.id
     }
-  })
   end
 
   # POST /api/conversations/:conversation_id/messages
