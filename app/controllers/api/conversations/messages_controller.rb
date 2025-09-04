@@ -36,7 +36,7 @@ class Api::Conversations::MessagesController < ApplicationController
     
     # Format response
     render_success({
-    messages: @messages.map { |msg| format_message(msg) },
+    messages: @messages.map { |msg| format_message_response(msg) },
     pagination: {
       has_more: has_more,
       oldest_message_id: @messages.first&.id,
@@ -55,18 +55,89 @@ class Api::Conversations::MessagesController < ApplicationController
       source: 'dpr'
     )
     
-    # Step 2: Check if we need to prepend web summary
-    prepend_web_summary = message_params[:prepend_web_summary]
-    
-    # Step 3: Send to OpenAI and get response
+    # Step 2: Check if the request wants streaming
+    if request.headers['Accept']&.include?('text/event-stream')
+      # User wants streaming response
+      handle_streaming_response(user_message)
+    else
+      # User wants regular response (for testing)
+      handle_regular_response(user_message)
+    end
+  end
+  
+  private
+  
+  def handle_streaming_response(user_message)
+    # Set up streaming response headers
+    response.headers['Content-Type'] = 'text/event-stream'
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['Connection'] = 'keep-alive'
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Cache-Control'
+  
+    # Create streaming service
+    streaming = StreamingService.new(response)
+  
     begin
-      openai_service = OpenaiService.new
+      # Send initial status
+      streaming.send_status_update("Processing your message...")
+  
+      # Check if we need to prepend web summary
+      prepend_web_summary = message_params[:prepend_web_summary]
       
       # Prepare the message content
       message_content = user_message.content
       if prepend_web_summary.present?
         message_content = "#{prepend_web_summary}\n\nUser question: #{user_message.content}"
       end
+  
+      # Send to OpenAI and get streaming response
+      openai_service = OpenaiService.new
+      ai_response = openai_service.process_message_with_streaming(
+        @conversation.openai_thread_id,
+        message_content,
+        streaming
+      )
+  
+      # Save the complete AI response
+      @conversation.messages.create!(
+        role: 'assistant',
+        content: ai_response.to_json,
+        source: ai_response['needs_consent'] ? 'web' : 'dpr'
+      )
+  
+      # Send completion event
+      streaming.send_complete_response(
+        ai_response['answer'],
+        ai_response['citations']
+      )
+  
+    rescue => e
+      # Handle any errors
+      streaming.send_error("Sorry, something went wrong. Please try again.")
+      Rails.logger.error "Streaming error: #{e.message}"
+    ensure
+      # Always close the stream
+      response.stream.close
+    end
+  end
+  
+  def handle_regular_response(user_message)
+    # This is your existing logic for non-streaming requests
+    # Keep this for testing and fallback
+    
+    begin
+      # Check if we need to prepend web summary
+      prepend_web_summary = message_params[:prepend_web_summary]
+      
+      # Prepare the message content
+      message_content = user_message.content
+      if prepend_web_summary.present?
+        message_content = "#{prepend_web_summary}\n\nUser question: #{user_message.content}"
+      end
+  
+      # Create OpenAI service instance
+      openai_service = OpenaiService.new
       
       # Process message through OpenAI
       ai_response = openai_service.process_message(
@@ -74,25 +145,25 @@ class Api::Conversations::MessagesController < ApplicationController
         message_content
       )
       
-      # Step 4: Save AI response to database
+      # Save AI response to database
       assistant_message = @conversation.messages.create!(
         role: 'assistant',
         content: ai_response.to_json,
         source: ai_response['needs_consent'] ? 'web' : 'dpr'
       )
       
-      # Step 5: Return formatted response
+      # Return formatted response
       render_success({
-      message: format_message(assistant_message),
-      streaming: false
-    })
+        message: format_message_response(assistant_message),
+        streaming: false
+      })
       
     rescue => e
       # Handle OpenAI errors
       Rails.logger.error "OpenAI error: #{e.message}"
       
       # Create error response message
-      error_message = @conversation.messages.create!(
+      @conversation.messages.create!(
         role: 'assistant',
         content: {
           answer: "I'm sorry, I encountered an error processing your request.",
@@ -104,15 +175,14 @@ class Api::Conversations::MessagesController < ApplicationController
       )
       
       render_error(
-      'OPENAI_ERROR',
-      'Unable to process message',
-      details: e.message,
-      status: :service_unavailable
-    )
+        'OPENAI_ERROR',
+        'Unable to process message',
+        details: e.message,
+        status: :service_unavailable
+      )
     end
   end
 
-  private
 
   # Find conversation and verify user ownership
   def find_conversation
@@ -135,14 +205,4 @@ class Api::Conversations::MessagesController < ApplicationController
     params.permit(:content, :prepend_web_summary)
   end
 
-  # Format message for API response
-  def format_message(message)
-    {
-      id: message.id,
-      role: message.role,
-      content: message.role == 'user' ? message.content : message.content_data,
-      source: message.source,
-      created_at: message.created_at.iso8601
-    }
-  end
 end
