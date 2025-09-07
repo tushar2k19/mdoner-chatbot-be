@@ -225,51 +225,159 @@ def parse_assistant_response(assistant_message)
   end
 end
 
-# Add this NEW method to detect when consent is needed
 def check_if_needs_consent(text_content, citations)
   # If there are citations, we found information in DPR documents
   return false if citations.any?
   
-  # Check for phrases that indicate no information was found
-  no_info_phrases = [
+  text_lower = text_content.downcase
+  
+  # Analyze the response structure and content
+  analysis = analyze_response_quality(text_content, text_lower)
+  
+  # Decision logic based on analysis
+  case analysis[:confidence]
+  when :high
+    false  # High confidence answer, no consent needed
+  when :medium
+    # Medium confidence - check for specific indicators
+    analysis[:has_negative_indicators] ? true : false
+  when :low
+    true   # Low confidence, needs consent
+  end
+end
+
+private
+
+def analyze_response_quality(text_content, text_lower)
+  confidence = :medium
+  has_negative_indicators = false
+  has_positive_indicators = false
+  
+  # Check response length (very short responses are often incomplete)
+  if text_content.length < 100
+    confidence = :low
+  elsif text_content.length > 300
+    confidence = :high
+  end
+  
+  # Check for negative indicators (strong signals of "not found")
+  strong_negative_indicators = [
+    'do not provide any information',
+    'do not provide any details', 
+    'do not provide any data',
     'not available in the provided documents',
     'not found in the documents',
-    'not available in the documents',
-    'not included in the provided documents',
-    'not present in the documents',
-    'not available in the DPR documents',
-    'not found in the DPR documents',
-    'not available in the provided DPR documents',
-    'not included in the DPR documents',
-    'not present in the DPR documents',
+    'not contain any specific information',
     'no information about',
-    'no details about',
-    'no data about',
-    'no information available',
-    'no details available',
-    'no data available',
     'cannot find information',
     'unable to find information',
-    'no relevant information',
-    'no specific information',
-    'no detailed information',
-    'no comprehensive information',
-    'no complete information',
-    'no thorough information',
-    'no extensive information',
-    'no in-depth information',
-    'no detailed data',
-    'no specific data',
-    'no comprehensive data',
-    'no complete data',
-    'no thorough data',
-    'no extensive data',
-    'no in-depth data'
+    'therefore, there is no available information',
+    'there is no available information'
   ]
   
-  # Check if the response contains any of these phrases
-  text_lower = text_content.downcase
-  no_info_phrases.any? { |phrase| text_lower.include?(phrase.downcase) }
+  if strong_negative_indicators.any? { |indicator| text_lower.include?(indicator) }
+    has_negative_indicators = true
+    confidence = :low
+  end
+  
+  # Check for positive indicators (strong signals of good answer)
+  strong_positive_indicators = [
+    'according to the documents',
+    'based on the dpr',
+    'the project includes',
+    'the budget allocation',
+    'the timeline shows',
+    'the implementation plan',
+    'the technical specifications',
+    'the environmental impact',
+    'the cost breakdown',
+    'the project details',
+    'the infrastructure includes',
+    'the development plan',
+    'the construction details',
+    'the project aims to',
+    'the initiative focuses on',
+    'the development includes',
+    'the construction involves',
+    'the implementation involves',
+    'the project involves',
+    'the development involves'
+  ]
+  
+  if strong_positive_indicators.any? { |indicator| text_lower.include?(indicator) }
+    has_positive_indicators = true
+    confidence = :high
+  end
+  
+  # Check for deflection patterns (when AI gives related but not direct info)
+  deflection_patterns = [
+    'the available details primarily focus on',
+    'while the documents contain information about',
+    'although the documents include details about',
+    'the documents provide information about',
+    'primarily focus on',
+    'the available information relates to',
+    'the documents focus on',
+    'the information available focuses on'
+  ]
+  
+  if deflection_patterns.any? { |pattern| text_lower.include?(pattern) }
+    has_negative_indicators = true
+    confidence = :low
+  end
+  
+  # Check for question-specific content
+  # If the response doesn't contain the key terms from the question, it might be off-topic
+  question_keywords = extract_question_keywords(text_content)
+  if question_keywords.any? && !question_keywords.any? { |keyword| text_lower.include?(keyword.downcase) }
+    confidence = :low
+  end
+  
+  # Check for generic responses
+  generic_responses = [
+    'the documents provided do not contain',
+    'no information available',
+    'not available in the documents',
+    'the documents do not provide',
+    'the available information does not include'
+  ]
+  
+  if generic_responses.any? { |pattern| text_lower.include?(pattern) }
+    has_negative_indicators = true
+    confidence = :low
+  end
+  
+  {
+    confidence: confidence,
+    has_negative_indicators: has_negative_indicators,
+    has_positive_indicators: has_positive_indicators
+  }
+end
+
+def extract_question_keywords(text_content)
+  # Extract key terms that should be in a good answer
+  # This is a simple approach - you could make it more sophisticated
+  keywords = []
+  
+  # Look for common question patterns
+  if text_content.include?('CM') || text_content.include?('Chief Minister')
+    keywords << 'chief minister'
+  end
+  
+  if text_content.include?('thought') || text_content.include?('opinion')
+    keywords << 'thought'
+    keywords << 'opinion'
+  end
+  
+  if text_content.include?('budget')
+    keywords << 'budget'
+  end
+  
+  if text_content.include?('timeline')
+    keywords << 'timeline'
+  end
+  
+  keywords
 end
 
 # Add this NEW method for citation extraction
