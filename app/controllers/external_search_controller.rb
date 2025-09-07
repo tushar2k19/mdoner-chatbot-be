@@ -1,160 +1,170 @@
-# class ExternalSearchController < ApplicationController
-#   before_action :authenticate_user!
-
-#   # POST /api/external_search/search
-#   # Perform external web search
-#   # Params: query, provider (tavily/perplexity), context
-#   # Returns: search results with citations
-#   def search
-#     # TODO: Validate search parameters
-#     # TODO: Call selected search provider API
-#     # TODO: Format search results
-#     # TODO: Store search log
-#     # TODO: Handle API rate limits
-#   end
-
-#   # POST /api/external_search/consent
-#   # Handle user consent for web search
-#   # Params: conversation_id, query, allow
-#   # Returns: consent status
-#   def consent
-#     # TODO: Store user consent
-#     # TODO: Log consent decision
-#     # TODO: Return appropriate response
-#   end
-
-#   # GET /api/external_search/providers
-#   # List available search providers
-#   # Returns: provider list with status
-#   def providers
-#     # TODO: Return available providers
-#     # TODO: Include provider status
-#     # TODO: Include rate limit info
-#   end
-
-#   # POST /api/external_search/tavily
-#   # Tavily-specific search endpoint
-#   # Params: query, search_depth, max_results
-#   # Returns: Tavily search results
-#   def tavily
-#     # TODO: Call Tavily API
-#     # TODO: Handle API authentication
-#     # TODO: Format results
-#     # TODO: Handle errors
-#   end
-
-#   # POST /api/external_search/perplexity
-#   # Perplexity-specific search endpoint
-#   # Params: query, model, max_tokens
-#   # Returns: Perplexity search results
-#   def perplexity
-#     # TODO: Call Perplexity API
-#     # TODO: Handle API authentication
-#     # TODO: Format results
-#     # TODO: Handle errors
-#   end
-
-#   # GET /api/external_search/logs
-#   # Get search logs (admin only)
-#   # Params: user_id, date_range, provider
-#   # Returns: search logs
-#   def logs
-#     # TODO: Validate admin permissions
-#     # TODO: Filter logs by parameters
-#     # TODO: Include search metadata
-#     # TODO: Handle pagination
-#   end
-
-#   # POST /api/external_search/rate_limit_check
-#   # Check rate limits for providers
-#   # Returns: rate limit status
-#   def rate_limit_check
-#     # TODO: Check rate limits for all providers
-#     # TODO: Return current usage
-#     # TODO: Include reset times
-#   end
-
-#   # POST /api/external_search/fallback
-#   # Fallback search when primary provider fails
-#   # Params: query, failed_provider
-#   # Returns: results from backup provider
-#   def fallback
-#     # TODO: Try backup provider
-#     # TODO: Handle provider switching
-#     # TODO: Log fallback usage
-#   end
-
-#   # GET /api/external_search/analytics
-#   # Get search analytics (admin only)
-#   # Returns: search usage statistics
-#   def analytics
-#     # TODO: Validate admin permissions
-#     # TODO: Calculate search statistics
-#     # TODO: Include provider breakdown
-#     # TODO: Return usage metrics
-#   end
-
-#   # POST /api/external_search/test
-#   # Test search provider connectivity (admin only)
-#   # Params: provider
-#   # Returns: test results
-#   def test
-#     # TODO: Validate admin permissions
-#     # TODO: Test provider connectivity
-#     # TODO: Test API authentication
-#     # TODO: Return test results
-#   end
-
-#   # POST /api/external_search/configure
-#   # Configure search providers (admin only)
-#   # Params: provider, api_key, settings
-#   # Returns: configuration status
-#   def configure
-#     # TODO: Validate admin permissions
-#     # TODO: Update provider configuration
-#     # TODO: Test new configuration
-#     # TODO: Store settings securely
-#   end
-
-#   private
-
-#   def search_params
-#     # TODO: Define permitted search parameters
-#     # TODO: Add validation rules
-#   end
-
-#   def validate_consent
-#     # TODO: Check if user has given consent
-#     # TODO: Handle consent requirements
-#   end
-
-#   def call_tavily_api
-#     # TODO: Implement Tavily API call
-#     # TODO: Handle authentication
-#     # TODO: Process response
-#   end
-
-#   def call_perplexity_api
-#     # TODO: Implement Perplexity API call
-#     # TODO: Handle authentication
-#     # TODO: Process response
-#   end
-
-#   def format_search_results
-#     # TODO: Format results consistently
-#     # TODO: Include source URLs
-#     # TODO: Handle different result formats
-#   end
-
-#   def log_search
-#     # TODO: Store search log
-#     # TODO: Include metadata
-#     # TODO: Handle logging errors
-#   end
-
-#   def check_rate_limits
-#     # TODO: Check provider rate limits
-#     # TODO: Handle rate limit errors
-#     # TODO: Implement backoff strategy
-#   end
-# end
+class ExternalSearchController < ApplicationController
+  # This controller handles external web search requests
+  
+  # Before any action, make sure user is authenticated
+  before_action :authenticate_user!
+  
+  # POST /api/external_search/search
+  # Perform external web search using Perplexity
+  # Params: query, conversation_id
+  # Returns: search results with citations
+  def search
+    begin
+      # Get the search parameters
+      query = params[:query]
+      conversation_id = params[:conversation_id]
+      
+      # Validate required parameters
+      if query.blank?
+        return render json: {
+          error: {
+            code: "MISSING_PARAMETER",
+            message: "Query parameter is required"
+          }
+        }, status: :bad_request
+      end
+      
+      if conversation_id.blank?
+        return render json: {
+          error: {
+            code: "MISSING_PARAMETER", 
+            message: "Conversation ID is required"
+          }
+        }, status: :bad_request
+      end
+      
+      # Find the conversation (using helper method)
+      conversation = find_conversation(conversation_id)
+      
+      # Create Perplexity service instance
+      perplexity_service = PerplexityService.new
+      
+      # Perform the search
+      search_result = perplexity_service.search(query)
+      
+      # Create a new message with the search result
+      message = Message.create_web_response(
+        conversation, 
+        search_result[:answer], 
+        search_result[:citations]
+      )
+      
+      # Return the search result (following your app's format)
+      render json: {
+        message: format_message(message),
+        search_metadata: {
+          query: query,
+          provider: 'perplexity',
+          timestamp: Time.current
+        }
+      }
+      
+    rescue => error
+      Rails.logger.error "External search error: #{error.message}"
+      render json: {
+        error: {
+          code: "SEARCH_FAILED",
+          message: "Unable to perform web search",
+          details: error.message
+        }
+      }, status: :service_unavailable
+    end
+  end
+  
+  # POST /api/external_search/consent
+  # Handle user consent for web search
+  # Params: conversation_id, query, allow
+  # Returns: consent status
+  def consent
+    begin
+      conversation_id = params[:conversation_id]
+      query = params[:query]
+      allow = params[:allow]
+      
+      # Validate parameters
+      if conversation_id.blank? || query.blank? || allow.nil?
+        return render json: {
+          error: {
+            code: "MISSING_PARAMETER",
+            message: "Missing required parameters"
+          }
+        }, status: :bad_request
+      end
+      
+      # Find the conversation (using helper method)
+      conversation = find_conversation(conversation_id)
+      
+      if allow == true || allow == 'true'
+        # User gave consent, perform the search
+        search_result = search
+        return search_result
+      else
+        # User denied consent, return a message
+        message = Message.create!(
+          conversation: conversation,
+          role: 'assistant',
+          content: "I understand you don't want to search the internet. Is there anything else I can help you with regarding the DPR documents?",
+          source: 'dpr'
+        )
+        
+        render json: {
+          message: format_message(message)
+        }
+      end
+      
+    rescue => error
+      Rails.logger.error "Consent handling error: #{error.message}"
+      render json: {
+        error: {
+          code: "CONSENT_FAILED",
+          message: "Unable to handle consent",
+          details: error.message
+        }
+      }, status: :service_unavailable
+    end
+  end
+  
+  # GET /api/external_search/providers
+  # List available search providers
+  # Returns: provider list with status
+  def providers
+    render json: {
+      providers: [
+        {
+          name: 'perplexity',
+          display_name: 'Perplexity AI',
+          status: 'active',
+          description: 'AI-powered web search with real-time information'
+        }
+      ]
+    }
+  end
+  
+  private
+  
+  # Helper method to find conversation and check ownership
+  # This eliminates code duplication
+  def find_conversation(conversation_id)
+    conversation = current_user.conversations.find_by(
+      id: conversation_id, 
+      status: 'active'
+    )
+    
+    unless conversation
+      raise "Conversation not found or access denied"
+    end
+    
+    conversation
+  end
+  
+  # Format message for API response (matching your app's format)
+  def format_message(message)
+    {
+      id: message.id,
+      role: message.role,
+      content: message.role == 'user' ? message.content : message.content_data,
+      source: message.source,
+      created_at: message.created_at.iso8601
+    }
+  end
+end
