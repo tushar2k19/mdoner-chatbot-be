@@ -3,7 +3,7 @@ class Api::ConversationsController < ApplicationController
   before_action :authenticate_user!
    require_dependency 'openai_service'
   # This finds the conversation and checks if user owns it (for show/destroy actions)
-  before_action :find_conversation, only: [:show, :destroy, :update]
+  before_action :find_conversation, only: [:show, :update, :destroy]
 
   # POST /api/conversations
   # Creates a new conversation with OpenAI thread 
@@ -117,12 +117,8 @@ class Api::ConversationsController < ApplicationController
   # Updates conversation title
   def update
     begin
-      # Step 1: Update the conversation with new title
-      if @conversation.update(conversation_params)
-        # Step 2: Log the update for audit purposes
-        Rails.logger.info "User #{current_user.id} updated conversation #{@conversation.id}"
-        
-        # Step 3: Return success response with updated conversation
+      if @conversation.update(conversation_update_params)
+        # Success response - return the updated conversation data
         render json: {
           conversation: {
             id: @conversation.id,
@@ -138,6 +134,7 @@ class Api::ConversationsController < ApplicationController
           message: "Conversation updated successfully"
         }
       else
+        # Validation failed
         render json: {
           error: {
             code: "VALIDATION_ERROR",
@@ -158,7 +155,6 @@ class Api::ConversationsController < ApplicationController
       }, status: :service_unavailable
     end
   end
-
   # DELETE /api/conversations/:id
   # Soft deletes a conversation (marks as deleted, doesn't remove from DB)
   def destroy
@@ -208,6 +204,11 @@ class Api::ConversationsController < ApplicationController
 
   # Permits only allowed parameters for conversation creation
   def conversation_params
+    params.permit(:title)
+  end
+
+  # Permits only allowed parameters for conversation updates
+  def conversation_update_params
     params.permit(:title)
   end
 
