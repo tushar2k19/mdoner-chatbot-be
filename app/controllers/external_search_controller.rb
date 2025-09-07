@@ -40,7 +40,7 @@ class ExternalSearchController < ApplicationController
       perplexity_service = PerplexityService.new
       
       # Perform the search
-      search_result = perplexity_service.search(query)
+      search_result = perplexity_service.search(query, conversation_id)
       
       # Create a new message with the search result
       message = Message.create_web_response(

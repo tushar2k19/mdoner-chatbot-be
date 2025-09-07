@@ -17,24 +17,45 @@ class PerplexityService
   end
   
   # Main method to search the internet
-  def search(query)
-    # This method will handle the entire search process
-    # query: The user's question (e.g., "What are the project timelines?")
-    
+  def search(query, conversation_id = nil)
     begin
-      # Call the Perplexity API
-      response = call_perplexity_api(query)
+      # Get conversation context if conversation_id is provided
+      context_messages = get_conversation_context(conversation_id) if conversation_id
+      
+      # Build the enhanced query with context
+      enhanced_query = build_contextual_query(query, context_messages)
+      
+      # Call the Perplexity API with enhanced query
+      response = call_perplexity_api(enhanced_query)
       
       # Format the response for our app
       format_response(response)
       
     rescue => error
-      # If something goes wrong, return an error response
       handle_error(error)
     end
   end
   
   private
+
+# New method to get conversation context
+def get_conversation_context(conversation_id)
+  Message.where(conversation_id: conversation_id)
+         .order(created_at: :desc)
+         .limit(5)
+         .reverse
+end
+
+# New method to build contextual query
+def build_contextual_query(query, context_messages)
+  return query if context_messages.blank?
+  
+  context_text = context_messages.map do |msg|
+    "#{msg.role.capitalize}: #{msg.content}"
+  end.join("\n")
+  
+  "Previous conversation:\n#{context_text}\n\nCurrent query: #{query}"
+end
   
   # Method to actually call the Perplexity API
   def call_perplexity_api(query)
