@@ -193,6 +193,9 @@ def parse_assistant_response(assistant_message)
     
     # Extract citations from annotations AND text content
     citations = extract_citations_from_message(assistant_message)
+
+    # Check if the response indicates no information found
+    needs_consent = check_if_needs_consent(text_content, citations)
     
     # Try to parse as JSON (for structured responses)
     begin
@@ -200,6 +203,8 @@ def parse_assistant_response(assistant_message)
       
       # ALWAYS override citations with what we extracted
       parsed['citations'] = citations
+      # ALWAYS override needs_consent with our detection
+      parsed['needs_consent'] = needs_consent
       
       return parsed
     rescue JSON::ParserError
@@ -207,7 +212,7 @@ def parse_assistant_response(assistant_message)
       return {
         'answer' => text_content,
         'citations' => citations,
-        'needs_consent' => false
+        'needs_consent' => needs_consent
       }
     end
   else
@@ -219,6 +224,54 @@ def parse_assistant_response(assistant_message)
     }
   end
 end
+
+# Add this NEW method to detect when consent is needed
+def check_if_needs_consent(text_content, citations)
+  # If there are citations, we found information in DPR documents
+  return false if citations.any?
+  
+  # Check for phrases that indicate no information was found
+  no_info_phrases = [
+    'not available in the provided documents',
+    'not found in the documents',
+    'not available in the documents',
+    'not included in the provided documents',
+    'not present in the documents',
+    'not available in the DPR documents',
+    'not found in the DPR documents',
+    'not available in the provided DPR documents',
+    'not included in the DPR documents',
+    'not present in the DPR documents',
+    'no information about',
+    'no details about',
+    'no data about',
+    'no information available',
+    'no details available',
+    'no data available',
+    'cannot find information',
+    'unable to find information',
+    'no relevant information',
+    'no specific information',
+    'no detailed information',
+    'no comprehensive information',
+    'no complete information',
+    'no thorough information',
+    'no extensive information',
+    'no in-depth information',
+    'no detailed data',
+    'no specific data',
+    'no comprehensive data',
+    'no complete data',
+    'no thorough data',
+    'no extensive data',
+    'no in-depth data'
+  ]
+  
+  # Check if the response contains any of these phrases
+  text_lower = text_content.downcase
+  no_info_phrases.any? { |phrase| text_lower.include?(phrase.downcase) }
+end
+
 # Add this NEW method for citation extraction
 # Update the extract_citations_from_message method
 def extract_citations_from_message(assistant_message)
