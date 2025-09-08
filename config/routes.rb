@@ -20,6 +20,9 @@ Rails.application.routes.draw do
         resources :messages, only: [:index, :create], controller: 'conversations/messages'
       end
 
+      # Checklist routes
+      get 'checklist/defaults', to: 'checklist#defaults'
+      post 'checklist/analyze', to: 'checklist#analyze'
     end
 
   # Minimal documents endpoint placeholder for health
