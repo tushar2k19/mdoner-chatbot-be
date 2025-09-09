@@ -301,8 +301,19 @@ class OpenaiService
           end
         end.uniq
 
-        parsed['citations'] = cleaned_citations
+        # Convert file IDs to document names if they are file IDs
+        converted_citations = cleaned_citations.map do |citation|
+          # Check if this looks like a file ID (starts with 'file-')
+          if citation.start_with?('file-')
+            DocumentMapper.file_id_to_document_name(citation)
+          else
+            citation
+          end
+        end.compact.uniq
+
+        parsed['citations'] = converted_citations
         Rails.logger.info "Extracted citations from JSON: #{cleaned_citations}"
+        Rails.logger.info "Converted citations to document names: #{converted_citations}"
 
         # Use assistant's needs_consent directly if provided, otherwise detect
         if parsed.key?('needs_consent')
