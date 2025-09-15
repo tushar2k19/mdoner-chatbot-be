@@ -40,9 +40,11 @@ class PerplexityService
 
 # New method to get conversation context
 def get_conversation_context(conversation_id)
+  # Only get the last few messages to avoid overwhelming the API
+  # and to prevent citation accumulation
   Message.where(conversation_id: conversation_id)
          .order(created_at: :desc)
-         .limit(5)
+         .limit(3)  # Reduced from 5 to 3 to minimize context
          .reverse
 end
 
@@ -50,11 +52,25 @@ end
 def build_contextual_query(query, context_messages)
   return query if context_messages.blank?
   
-  context_text = context_messages.map do |msg|
-    "#{msg.role.capitalize}: #{msg.content}"
-  end.join("\n")
+  # Only include the most recent user message and assistant response
+  # to avoid citation accumulation
+  recent_messages = context_messages.last(2)
   
-  "Previous conversation:\n#{context_text}\n\nCurrent query: #{query}"
+  context_text = recent_messages.map do |msg|
+    if msg.role == 'user'
+      "User: #{msg.content}"
+    elsif msg.role == 'assistant'
+      # For assistant messages, only include the answer, not citations
+      content = JSON.parse(msg.content) rescue msg.content
+      if content.is_a?(Hash) && content['answer']
+        "Assistant: #{content['answer']}"
+      else
+        "Assistant: #{msg.content}"
+      end
+    end
+  end.compact.join("\n")
+  
+  "Previous conversation context:\n#{context_text}\n\nCurrent query: #{query}"
 end
   
   # Method to actually call the Perplexity API
@@ -108,6 +124,15 @@ end
     # Extract citations (sources) from the response
     citations = extract_citations(data)
     
+    # Log citation information for debugging
+    Rails.logger.info "=== Perplexity Citation Debug ==="
+    Rails.logger.info "Raw response keys: #{data.keys}"
+    Rails.logger.info "Citations found: #{citations.length}"
+    citations.each_with_index do |citation, index|
+      Rails.logger.info "  Citation #{index + 1}: #{citation[:title]} - #{citation[:url]}"
+    end
+    Rails.logger.info "=== End Citation Debug ==="
+    
     # Return formatted response
     {
       answer: answer,
@@ -123,45 +148,76 @@ end
     
     citations = []
     
-    # Look for citations in the response
-    if data['citations']
-      data['citations'].each do |citation|
-        citations << {
-          title: 'Web Source',
-          url: citation,
-          snippet: ''
-        }
-      end
-    end
-    
-    # Also check search_results for more detailed citations
-    if data['search_results']
+    # First, try to get citations from search_results (most reliable)
+    if data['search_results'] && data['search_results'].is_a?(Array)
       data['search_results'].each do |result|
+        next unless result['url'] # Skip if no URL
+        
+        # Create a meaningful title from the result
+        title = result['title'] || extract_domain_from_url(result['url'])
+        
         citations << {
-          title: result['title'] || 'Web Source',
+          title: title,
           url: result['url'],
           snippet: result['snippet'] || ''
         }
       end
     end
     
-    # If no citations found, try to extract URLs from the answer
+    # If no search_results, try citations array
+    if citations.empty? && data['citations'] && data['citations'].is_a?(Array)
+      data['citations'].each do |citation|
+        next unless citation.is_a?(String) && citation.start_with?('http')
+        
+        title = extract_domain_from_url(citation)
+        
+        citations << {
+          title: title,
+          url: citation,
+          snippet: ''
+        }
+      end
+    end
+    
+    # If still no citations, try to extract URLs from the answer text
     if citations.empty?
       answer = data.dig('choices', 0, 'message', 'content')
       if answer
         # Look for URLs in the answer text
-        urls = answer.scan(/https?:\/\/[^\s]+/)
-        urls.each do |url|
+        urls = answer.scan(/https?:\/\/[^\s\)]+/)
+        urls.uniq.each do |url|
+          # Clean up URL (remove trailing punctuation)
+          clean_url = url.gsub(/[.,;:!?]+$/, '')
+          
+          title = extract_domain_from_url(clean_url)
+          
           citations << {
-            title: 'Web Source',
-            url: url,
+            title: title,
+            url: clean_url,
             snippet: ''
           }
         end
       end
     end
     
-    citations
+    # Limit to maximum 5 citations to avoid clutter
+    citations.first(5)
+  end
+  
+  # Helper method to extract domain name from URL for better titles
+  def extract_domain_from_url(url)
+    begin
+      uri = URI.parse(url)
+      domain = uri.host
+      
+      # Remove www. prefix if present
+      domain = domain.sub(/^www\./, '') if domain
+      
+      # Capitalize first letter and return
+      domain&.split('.')&.first&.capitalize || 'Web Source'
+    rescue
+      'Web Source'
+    end
   end
   
   # Method to handle errors

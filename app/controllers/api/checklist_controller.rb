@@ -5,19 +5,22 @@ class Api::ChecklistController < ApplicationController
   
   # Default checklist items based on your requirements
   DEFAULT_CHECKLIST_ITEMS = [
-    "Rationale for the project and its intended beneficiaries",
-    "Socio-economic benefit of the project",
-    "Alignment of the proposed project with the focus areas indicated under the scheme guidelines",
-    "KPIs for monitoring the project",
-    # "Population of India",
+    "Project rationale and intended beneficiaries",
+    "Socio-economic benefits of the project",
+    "Alignment with scheme guidelines and focus areas",
+    "Output Outcome framework with KPIs for monitoring",
     "SDG or other indices that the KPIs will impact and how",
-    "EXACT population of the State mentioned in dpr",
+    # "EXACT population of the State mentioned in dpr",
     # "Cybersecurity and data privacy considerations",
     # "Rough cost estimates as per latest SoR",
     "Total Project Cost for the Project",
-    "Convergence plan – indications how the proposed project converges with the other ongoing interventions of government in the space",
-    # "Sex Ratio of the state mentioned in dpr",
-    "Prioritized list of projects"
+    "Convergence plan with other ongoing government interventions",
+    "Prioritized list of projects",
+    "Alignment with Gati Shakti Master Plan",
+    # "Satellite imagery/photographs of project sites with location details",
+    # "Statutory clearances for Forest and Environment aspects",
+    "Sustainability plan and environmental considerations",
+    # "Implementation timelines and project milestones"
   ].freeze
   
   # GET /api/checklist/defaults
