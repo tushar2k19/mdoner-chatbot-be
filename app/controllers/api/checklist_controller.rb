@@ -15,12 +15,13 @@ class Api::ChecklistController < ApplicationController
     # "Rough cost estimates as per latest SoR",
     "Total Project Cost for the Project",
     "Convergence plan with other ongoing government interventions",
-    "Prioritized list of projects",
+    "Prioritized list of projects, duly signed by the chief secretary",
     "Alignment with Gati Shakti Master Plan",
     # "Satellite imagery/photographs of project sites with location details",
     # "Statutory clearances for Forest and Environment aspects",
     "Sustainability plan and environmental considerations",
-    # "Implementation timelines and project milestones"
+    # "Implementation timelines and project milestones",
+    "Location of project with geo-coordinates, satellite image and photos of project site"
   ].freeze
   
   # GET /api/checklist/defaults
