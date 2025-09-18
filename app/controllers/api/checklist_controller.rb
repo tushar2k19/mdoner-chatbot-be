@@ -114,7 +114,7 @@ class Api::ChecklistController < ApplicationController
     end
     
     # Validate document names (accept both space and underscore variants, case-insensitive)
-    # Currently using 4 documents: Nagaland Innovation Hub, Mizoram Development of Helipads, Assam Road Project, and Khankawn Rongura Road Project
+    # Currently using 5 documents: Nagaland Innovation Hub, Mizoram Development of Helipads, Assam Road Project, Khankawn Rongura Road Project, and Coffee Development Nagaland
     valid_documents = [
       # "Meghalaya_skywalk.pdf", # COMMENTED OUT - not currently used
       # "Tripura_Zoological_Park.pdf", # COMMENTED OUT - not currently used
@@ -122,7 +122,8 @@ class Api::ChecklistController < ApplicationController
       "Nagaland_Innovation_Hub.pdf",
       "Mizoram_Development_of_Helipads.pdf",
       "Assam_Road_Project.pdf",
-      "Khankawn_Rongura_Road_Project.pdf"
+      "Khankawn_Rongura_Road_Project.pdf",
+      "Coffee_Development_Nagaland.pdf"
     ]
 
     valid_normalized = valid_documents.map { |n| normalize_doc_name(n) }.to_set

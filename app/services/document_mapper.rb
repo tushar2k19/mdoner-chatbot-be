@@ -11,7 +11,8 @@ class DocumentMapper
     'Nagaland Innovation Hub.pdf',
     'Mizoram Development of Helipads.pdf',
     'Assam Road Project.pdf',
-    'Khankawn Rongura Road Project.pdf'
+    'Khankawn Rongura Road Project.pdf',
+    'Coffee Development Nagaland.pdf'
   ].freeze
 
   # Build name -> file_id map from ENV so deployments don't require code edits
@@ -22,7 +23,8 @@ class DocumentMapper
     'nagaland_innovation_hub.pdf' => 'file-S15U6VUjfhjfrxBvKSEV74',
     'mizoram_development_of_helipads.pdf' => 'file-9zpZMkoWhkd7Ua6of8Ss4K',
     'assam_road_project.pdf' => 'file-HWZQBZpqFoYiKWMhxKtDJh',
-    'khankawn_rongura_road_project.pdf' => 'file-RR8o9DK99jgubhoU1au4Yu'
+    'khankawn_rongura_road_project.pdf' => 'file-RR8o9DK99jgubhoU1au4Yu',
+    'coffee_development_nagaland.pdf' => 'file-SsWbvBjh7BCVgVemFS2epi'
   }.freeze
 
   # Build file_id -> display name map
@@ -37,6 +39,7 @@ class DocumentMapper
                    when 'mizoram_development_of_helipads.pdf' then 'Mizoram Development of Helipads.pdf'
                    when 'assam_road_project.pdf' then 'Assam Road Project.pdf'
                    when 'khankawn_rongura_road_project.pdf' then 'Khankawn Rongura Road Project.pdf'
+                   when 'coffee_development_nagaland.pdf' then 'Coffee Development Nagaland.pdf'
                    else normalized_name.tr('_', ' ').split.map(&:capitalize).join(' ')
                    end
 
