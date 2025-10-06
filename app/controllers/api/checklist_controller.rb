@@ -5,10 +5,10 @@ class Api::ChecklistController < ApplicationController
   
   # Default checklist items based on your requirements
   DEFAULT_CHECKLIST_ITEMS = [
-    "Project rationale and intended beneficiaries",
+    "Project rationale and the intended beneficiaries",
     "Socio-economic benefits of the project",
     "Alignment with scheme guidelines and focus areas",
-    "Output Outcome framework with KPIs for monitoring",
+    "Output-Outcome framework with KPIs for monitoring",
     "SDG or other indices that the KPIs will impact and how",
     # "EXACT population of the State mentioned in dpr",
     # "Cybersecurity and data privacy considerations",
@@ -21,7 +21,7 @@ class Api::ChecklistController < ApplicationController
     # "Statutory clearances for Forest and Environment aspects",
     "Sustainability plan and environmental considerations",
     # "Implementation timelines and project milestones",
-    "Location of project with geo-coordinates, satellite image and photos of project site"
+    # "Location of project with geo-coordinates, satellite image and photos of project site"
   ].freeze
   
   # GET /api/checklist/defaults

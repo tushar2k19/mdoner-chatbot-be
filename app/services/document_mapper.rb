@@ -20,7 +20,7 @@ class DocumentMapper
     # 'meghalaya_skywalk.pdf' => ENV['OPENAI_FILE_ID_MEGHALAYA'],
     # 'tripura_zoological_park.pdf' => ENV['OPENAI_FILE_ID_TRIPURA'],
     # 'kohima_football_ground.pdf' => ENV['OPENAI_FILE_ID_KOHIMA'],
-    'nagaland_innovation_hub.pdf' => 'file-S15U6VUjfhjfrxBvKSEV74',
+    'nagaland_innovation_hub.pdf' => 'file-CTzwMEmmcBsidZjU4PdtgP',
     'mizoram_development_of_helipads.pdf' => 'file-9zpZMkoWhkd7Ua6of8Ss4K',
     'assam_road_project.pdf' => 'file-HWZQBZpqFoYiKWMhxKtDJh',
     'khankawn_rongura_road_project.pdf' => 'file-RR8o9DK99jgubhoU1au4Yu',
