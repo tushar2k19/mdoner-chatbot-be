@@ -626,7 +626,7 @@ end
       end.compact.uniq
 
       Rails.logger.info "Resolved #{selected_file_ids.length} file_ids for attachments"
-
+      Rails.logger.info "FILE_ID = #{selected_file_ids}" 
       message_id = send_message(thread_id, prompt, file_ids: selected_file_ids)
       Rails.logger.info "Sent checklist message: #{message_id}"
       

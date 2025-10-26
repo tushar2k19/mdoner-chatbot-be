@@ -18,13 +18,11 @@ class DocumentMapper
   # Build name -> file_id map from ENV so deployments don't require code edits
   NAME_TO_FILE_ID = {
     # 'meghalaya_skywalk.pdf' => ENV['OPENAI_FILE_ID_MEGHALAYA'],
-    # 'tripura_zoological_park.pdf' => ENV['OPENAI_FILE_ID_TRIPURA'],
-    # 'kohima_football_ground.pdf' => ENV['OPENAI_FILE_ID_KOHIMA'],
-    'nagaland_innovation_hub.pdf' => 'file-CTzwMEmmcBsidZjU4PdtgP',
-    'mizoram_development_of_helipads.pdf' => 'file-9zpZMkoWhkd7Ua6of8Ss4K',
-    'assam_road_project.pdf' => 'file-HWZQBZpqFoYiKWMhxKtDJh',
-    'khankawn_rongura_road_project.pdf' => 'file-RR8o9DK99jgubhoU1au4Yu',
-    'coffee_development_nagaland.pdf' => 'file-SsWbvBjh7BCVgVemFS2epi'
+    'nagaland_innovation_hub.pdf' => 'file-9WYEvRbNZC2BDRcBvD94sG', #'file-CTzwMEmmcBsidZjU4PdtgP',
+    'mizoram_development_of_helipads.pdf' => 'file-2zox9ddsxAu8aHFpaPLdcz', #'file-9zpZMkoWhkd7Ua6of8Ss4K',
+    'assam_road_project.pdf' => 'file-MHfdPJHpfzbEq81Lka8UQf', #'file-HWZQBZpqFoYiKWMhxKtDJh',
+    'khankawn_rongura_road_project.pdf' => 'file-DcV8nEaEJgdwW3Cut7WezM',#'file-RR8o9DK99jgubhoU1au4Yu',
+    'coffee_development_nagaland.pdf' => 'file-VyZ3evk98qT3QQMJkoBbM8' #'file-SsWbvBjh7BCVgVemFS2epi'
   }.freeze
 
   # Build file_id -> display name map

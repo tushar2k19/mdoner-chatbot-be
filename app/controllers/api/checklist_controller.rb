@@ -3,37 +3,130 @@ class Api::ChecklistController < ApplicationController
   
   before_action :authenticate_user!
   
-  # Default checklist items based on your requirements
+  # Document-specific checklist items
+  DOCUMENT_SPECIFIC_CHECKLISTS = {
+    "nagaland_innovation_hub.pdf" => [
+      "Approval of concept note from MDONER (Minutes of EMIC)",
+      "Compliance with the comments (if any) of the concerned line Ministry/Department and conditions specified by EMIC (if any) at the time of selection of project",
+      "Endorsement on DPR by SLEC and submission of project proposal to MDoNER (minutes of SLEC to be enclosed)",
+      "Project snapshot along with the Mechanism of O&M (during after project completion)",
+      "Project rationale and intended beneficiaries",
+      "Socio-economic impact of the project",
+      "Timeline for implementation and sustanability plan",
+      "Cost estimates, clearly indicating the basis for unit costs and source of funding for the project",
+      "locations with geo-coordinates and satellite images or photographs of project site",
+      "Alignment with Gati Shakti master plan to demonstrate convergence",
+      "Output-Outcome framework with KPIs for monitoring the project",
+      "Certificates of the following:\na) availability of encumbrance-free land for the project\nb) certification that costs proposed is as per the latest applicable schedule of rates\nc) non-duplication certificate"
+    ],
+    "mizoram_development_of_helipads.pdf" => [
+      "Approval of concept note from MDONER (Minutes of EMIC)",
+      "Alignment of proposed project with the focus areas",
+      "project snapshot along with the Mechanism of O&M (during after project completion)",
+      "Project rationale and intended beneficiaries",
+      "Socio-economic impact of the project",
+      "Timeline for implementation and sustanability plan",
+      "Cost estimates, clearly indicating the basis for unit costs and source of funding for the project",
+      "locations with geo-coordinates and satellite images or photographs of project site",
+      "Alignment with Gati Shakti master plan to demonstrate convergence",
+      "Output-Outcome framework with KPIs for monitoring the project",
+      "Statuatory Clearances for the Forest and Environment",
+      "Certificates of the following:\na) availability of encumbrance-free land for the project\nb) certification that costs proposed is as per the latest applicable schedule of rates\nc) non-duplication certificate",
+      
+    ],
+    "khankawn_rongura_road_project.pdf" => [
+      "Approval of concept note from MDONER (Minutes of EMIC)",
+      "Alignment of proposed project with the focus areas",
+      "Cost estimates, clearly indicating the basis for unit costs along with source of funding",
+      "Mechanism for O&M (during and after project life)",
+      "Timeline for implementation and sustanability plan",
+      "locations with geo-coordinates or satellite images or photographs of project site",
+      "Alignment with Gati Shakti master plan to demonstrate convergence",
+      "Endorsement on DPR by SLEC and submission of project proposal to MDoNER (minutes of SLEC to be enclosed)",
+      "Output Outcome framework with KPIs for monitoring",
+      "Project rationale and intended beneficiaries",
+      "Socio-economic impact of the project",
+      "Certificates of the following:\na) availability of encumbrance-free land for the project\nb) certification that costs proposed is as per the latest applicable schedule of rates\nc) non-duplication certificate",
+    ],
+    "assam_road_project.pdf" => [
+      "Approval of concept note from MDONER (Minutes of EMIC)",
+      "Project rationale and intended beneficiaries",
+      "Socio-economic impact of the project",
+      "Cost estimates, clearly indicating the basis for unit costs and source of funding for the project",
+      "locations with geo-coordinates or satellite images or photographs of project site",
+      "Alignment with scheme guidelines and focus areas",
+      "Sustainability plan and environmental considerations",
+      "Endorsement on DPR by SLEC and submission of project proposal to MDoNER (minutes of SLEC to be enclosed)",
+      "Alignment with Gati Shakti master plan to demonstrate convergence",
+      "Mechanism for O&M (during and after project life)",
+      "Timeline for implementation",
+      "Statuatory Clearances for the Forest and Environment",
+      "Output Outcome framework with KPIs for monitoring", 
+      "Certificates of the following:\na) availability of encumbrance-free land for the project\nb) certification that costs proposed is as per the latest applicable schedule of rates\nc) non-duplication certificate",
+    ],
+    "coffee_development_nagaland.pdf" => [
+      "Project rationale and intended beneficiaries",
+      "Socio-economic impact of the project",
+      "Cost estimates, clearly indicating the basis for unit costs and source of funding for the project",
+      "locations with geo-coordinates or satellite images or photographs of project site",
+      "Alignment with scheme guidelines and focus areas",
+      "Sustainability plan and environmental considerations",
+      "Mechanism for O&M (during and after project life)",
+      "Timeline for implementation and the plan",
+      "Alignment with Gati Shakti master plan to demonstrate convergence",
+      "Statuatory Clearances for the Forest and Environment",
+      "Output Outcome framework with KPIs for monitoring",
+      "Certificates of the following:\na) availability of encumbrance-free land for the project\nb) certification that costs proposed is as per the latest applicable schedule of rates\nc) non-duplication certificate"
+    ]
+  }.freeze
+
+  # Default checklist items (fallback)
   DEFAULT_CHECKLIST_ITEMS = [
     "Project rationale and the intended beneficiaries",
     "Socio-economic benefits of the project",
     "Alignment with scheme guidelines and focus areas",
     "Output-Outcome framework with KPIs for monitoring",
     "SDG or other indices that the KPIs will impact and how",
-    # "EXACT population of the State mentioned in dpr",
-    # "Cybersecurity and data privacy considerations",
-    # "Rough cost estimates as per latest SoR",
     "Total Project Cost for the Project",
     "Convergence plan with other ongoing government interventions",
     "Prioritized list of projects, duly signed by the chief secretary",
     "Alignment with Gati Shakti Master Plan",
-    # "Satellite imagery/photographs of project sites with location details",
-    # "Statutory clearances for Forest and Environment aspects",
-    "Sustainability plan and environmental considerations",
-    # "Implementation timelines and project milestones",
-    # "Location of project with geo-coordinates, satellite image and photos of project site"
+    "Sustainability plan and environmental considerations"
   ].freeze
   
   # GET /api/checklist/defaults
-  # Returns the default checklist items
+  # Returns document-specific checklist items or default items
   def defaults
-    render_success(
-      {
-        checklist_items: DEFAULT_CHECKLIST_ITEMS,
-        total_items: DEFAULT_CHECKLIST_ITEMS.length
-      },
-      message: "Default checklist items retrieved successfully"
-    )
+    document_name = params[:document_name]
+    
+    if document_name.present?
+      # Normalize document name for lookup
+      normalized_doc_name = normalize_doc_name(document_name)
+      
+      # Get document-specific checklist items
+      checklist_items = DOCUMENT_SPECIFIC_CHECKLISTS[normalized_doc_name] || DEFAULT_CHECKLIST_ITEMS
+      
+      render_success(
+        {
+          checklist_items: checklist_items,
+          total_items: checklist_items.length,
+          document_name: document_name,
+          is_document_specific: DOCUMENT_SPECIFIC_CHECKLISTS.key?(normalized_doc_name)
+        },
+        message: "Checklist items retrieved successfully"
+      )
+    else
+      # Return default items if no document specified
+      render_success(
+        {
+          checklist_items: DEFAULT_CHECKLIST_ITEMS,
+          total_items: DEFAULT_CHECKLIST_ITEMS.length,
+          document_name: nil,
+          is_document_specific: false
+        },
+        message: "Default checklist items retrieved successfully"
+      )
+    end
   end
   
   # POST /api/checklist/analyze
