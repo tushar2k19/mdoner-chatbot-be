@@ -635,7 +635,10 @@ end
       Rails.logger.info "Created checklist run: #{run_id}"
       
       # Step 5: Wait for completion (extended timeout for complex analysis)
-      run_data = wait_for_run_completion(thread_id, run_id, timeout: 120)
+      start_time = Time.now
+      run_data = wait_for_run_completion(thread_id, run_id, timeout: 240)
+      time_taken = Time.now - start_time
+      Rails.logger.info "********** time taken = #{time_taken.round(2)} seconds **********"
       Rails.logger.info "Run completed with status: #{run_data['status']}"
       
       # Step 6: Process the response

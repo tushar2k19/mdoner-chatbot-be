@@ -151,7 +151,7 @@ class Api::ChecklistController < ApplicationController
       if item.blank? || !item.is_a?(String)
         return { error: "Checklist item #{index + 1} must be a non-empty string" }
       end
-      if item.length > 200
+      if item.length > 500
         return { error: "Checklist item #{index + 1} is too long (maximum 200 characters)" }
       end
     end
