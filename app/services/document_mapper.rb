@@ -20,7 +20,7 @@ class DocumentMapper
     # 'meghalaya_skywalk.pdf' => ENV['OPENAI_FILE_ID_MEGHALAYA'],
     'nagaland_innovation_hub.pdf' => 'file-9WYEvRbNZC2BDRcBvD94sG', #'file-CTzwMEmmcBsidZjU4PdtgP',
     'mizoram_development_of_helipads.pdf' => 'file-2zox9ddsxAu8aHFpaPLdcz', #'file-9zpZMkoWhkd7Ua6of8Ss4K',
-    'assam_road_project.pdf' => 'file-MHfdPJHpfzbEq81Lka8UQf', #'file-HWZQBZpqFoYiKWMhxKtDJh',
+    'assam_road_project.pdf' => 'file-UHsBDvmRKbojdEED8dzyPy', #'file-HWZQBZpqFoYiKWMhxKtDJh',
     'khankawn_rongura_road_project.pdf' => 'file-DcV8nEaEJgdwW3Cut7WezM',#'file-RR8o9DK99jgubhoU1au4Yu',
     'coffee_development_nagaland.pdf' => 'file-VyZ3evk98qT3QQMJkoBbM8' #'file-SsWbvBjh7BCVgVemFS2epi'
   }.freeze
