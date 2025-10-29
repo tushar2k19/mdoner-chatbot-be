@@ -30,7 +30,6 @@ class Api::ChecklistController < ApplicationController
       "locations with geo-coordinates and satellite images or photographs of project site",
       "Alignment with Gati Shakti master plan to demonstrate convergence",
       "Output-Outcome framework with KPIs for monitoring the project",
-      "Statuatory Clearances for the Forest and Environment",
       "Certificates of the following:\na) availability of encumbrance-free land for the project\nb) certification that costs proposed is as per the latest applicable schedule of rates\nc) non-duplication certificate",
       
     ],
